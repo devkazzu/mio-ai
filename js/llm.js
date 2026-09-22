@@ -89,9 +89,9 @@ export async function transcribe(audioBlob) {
 
 // ===== VISION (photo → text description) =====
 const VISION_MODELS = [
-    'meta-llama/llama-4-scout-17b-16e-instruct',
-    'meta-llama/llama-4-maverick-17b-128e-instruct',
-    'llama-3.2-11b-vision-preview'
+    'qwen/qwen3-vl-27b',
+    'qwen/qwen-2.5-vl-27b',
+    'qwen/qwen3-27b'
 ];
 
 export async function visionChat(imageBlob, prompt) {
