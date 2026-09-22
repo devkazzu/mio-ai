@@ -23,7 +23,9 @@ const dom = {
     toast: document.getElementById('toast'),
     avatarContainer: document.getElementById('avatarContainer'),
     audioVisualizer: document.getElementById('audioVisualizer'),
-    avatarSection: document.getElementById('avatarSection')
+    avatarSection: document.getElementById('avatarSection'),
+    textInput: document.getElementById('textInput'),
+    sendBtn: document.getElementById('sendBtn')
 };
 
 // ===== Internal state =====
