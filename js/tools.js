@@ -1,6 +1,6 @@
 // Mio — js/tools.js
 
-import { clearHistory } from './memory.js';
+import { clearHistory, getUserFact, setUserFact } from './memory.js';
 
 const REMINDERS_KEY = 'mio_reminders';
 const NOTES_KEY = 'mio_notes';
@@ -30,10 +30,8 @@ export async function requestNotificationPermission() {
     if (!('Notification' in window)) return 'unsupported';
     if (Notification.permission === 'granted') return 'granted';
     if (Notification.permission === 'denied') return 'denied';
-    try {
-        const result = await Notification.requestPermission();
-        return result;
-    } catch { return 'error'; }
+    try { return await Notification.requestPermission(); }
+    catch { return 'error'; }
 }
 
 function fireNotification(title, body) {
@@ -44,7 +42,6 @@ function fireNotification(title, body) {
     } catch { /* noop */ }
 }
 
-// Start a background checker for reminders (runs every 30s while page is open)
 let reminderCheckerId = null;
 export function startReminderChecker() {
     if (reminderCheckerId) return;
@@ -65,7 +62,6 @@ export function startReminderChecker() {
                 changed = true;
             }
         }
-
         if (changed) writeArr(REMINDERS_KEY, reminders);
     }, 30000);
 }
@@ -79,11 +75,6 @@ function addNote(text) {
     notes.push(note);
     writeArr(NOTES_KEY, notes);
     return note;
-}
-
-function deleteNote(id) {
-    const notes = readArr(NOTES_KEY).filter(n => n.id !== id);
-    return writeArr(NOTES_KEY, notes);
 }
 
 // ===== TODOS =====
@@ -110,6 +101,55 @@ function findByText(arr, query) {
     return arr.find(item => String(item.text).toLowerCase().includes(q)) || null;
 }
 
+// ===== WEATHER (Open-Meteo — free, no key needed) =====
+async function fetchWeather(city) {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en`);
+    const geo = await geoRes.json();
+    if (!geo.results || !geo.results.length) {
+        throw new Error('City not found');
+    }
+    const place = geo.results[0];
+    const lat = place.latitude;
+    const lon = place.longitude;
+    const name = place.name;
+    const country = place.country || '';
+
+    const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`);
+    const w = await wRes.json();
+    const c = w.current;
+
+    return {
+        city: name,
+        country,
+        temp: c.temperature_2m,
+        humidity: c.relative_humidity_2m,
+        wind: c.wind_speed_10m,
+        code: c.weather_code
+    };
+}
+
+function weatherDescription(code) {
+    const map = {
+        0: 'clear sky', 1: 'mainly clear', 2: 'partly cloudy', 3: 'overcast',
+        45: 'foggy', 48: 'foggy', 51: 'light drizzle', 53: 'drizzle', 55: 'heavy drizzle',
+        61: 'light rain', 63: 'rain', 65: 'heavy rain',
+        71: 'light snow', 73: 'snow', 75: 'heavy snow',
+        80: 'rain showers', 81: 'rain showers', 82: 'heavy showers',
+        95: 'thunderstorm', 96: 'thunderstorm', 99: 'thunderstorm'
+    };
+    return map[code] || 'normal weather';
+}
+
+// ===== CALCULATOR (safe eval) =====
+function safeCalculate(expression) {
+    const cleaned = String(expression).replace(/[^0-9+\-*/().%\s]/g, '');
+    if (!cleaned.trim()) throw new Error('Invalid');
+    // eslint-disable-next-line no-new-func
+    const result = Function(`"use strict"; return (${cleaned})`)();
+    if (typeof result !== 'number' || !isFinite(result)) throw new Error('Bad result');
+    return result;
+}
+
 // ===== EXECUTE ACTION =====
 export async function executeAction(actionName, parameters = {}) {
     try {
@@ -122,7 +162,7 @@ export async function executeAction(actionName, parameters = {}) {
                 reminders.push({ id: Date.now(), text, time, created: Date.now() });
                 writeArr(REMINDERS_KEY, reminders);
                 const perm = await requestNotificationPermission();
-                const extra = perm === 'granted' ? '' : ' (Notification permission do, Boss — tab fire kar payenge.)';
+                const extra = perm === 'granted' ? '' : ' (Notification permission do, Boss.)';
                 return { success: true, message: `Theek hai Boss, "${text}" ka reminder ${time} baje ke liye set kar diya.${extra}` };
             }
 
@@ -155,7 +195,7 @@ export async function executeAction(actionName, parameters = {}) {
 
             case 'note_add': {
                 const text = parameters.text || '';
-                if (!text) return { success: false, message: 'Kya likhna hai, Boss? Bolo.' };
+                if (!text) return { success: false, message: 'Kya likhna hai, Boss?' };
                 addNote(text);
                 return { success: true, message: `Note save kar liya, Boss: "${text}"` };
             }
@@ -198,6 +238,77 @@ export async function executeAction(actionName, parameters = {}) {
             case 'todo_clear': {
                 writeArr(TODOS_KEY, []);
                 return { success: true, message: 'Poori todo list clear kar di, Boss.' };
+            }
+
+            case 'weather': {
+                let city = parameters.city || '';
+                if (!city) {
+                    city = getUserFact('city') || '';
+                }
+                if (!city) {
+                    return { success: false, message: 'Kis sheher ka mausam chahiye, Boss? Bolo — jaise "Delhi ka mausam".' };
+                }
+                try {
+                    const w = await fetchWeather(city);
+                    const desc = weatherDescription(w.code);
+                    return {
+                        success: true,
+                        message: `${w.city} mein abhi ${w.temp}°C hai, ${desc}. Humidity ${w.humidity}% aur hawa ${w.wind} km/h chal rahi hai, Boss.`
+                    };
+                } catch (e) {
+                    return { success: false, message: `"${city}" naam ka sheher nahi mila, Boss.` };
+                }
+            }
+
+            case 'calculate': {
+                const expr = parameters.expression || '';
+                if (!expr) return { success: false, message: 'Kya calculate karna hai, Boss?' };
+                try {
+                    const result = safeCalculate(expr);
+                    return { success: true, message: `${expr} ka jawab ${result} hai, Boss.` };
+                } catch {
+                    return { success: false, message: 'Yeh calculation samajh nahi aayi, Boss.' };
+                }
+            }
+
+            case 'translate': {
+                const text = parameters.text || '';
+                const to = parameters.to || 'Hindi';
+                if (!text) return { success: false, message: 'Kya translate karna hai, Boss?' };
+                return { success: true, message: `Translation: "${text}" ko ${to} mein Mio ke LLM se karwa rahi hoon — bas prompt mein hi aata hai.` };
+            }
+
+            case 'convert': {
+                const value = Number(parameters.value);
+                const from = String(parameters.from || '').toLowerCase();
+                const to = String(parameters.to || '').toLowerCase();
+
+                if (!value || !from || !to) {
+                    return { success: false, message: 'Value, from aur to batao, Boss.' };
+                }
+
+                const toKm = { km: 1, mile: 1.60934, miles: 1.60934, m: 0.001, meter: 0.001, ft: 0.0003048, feet: 0.0003048 };
+                const toKg = { kg: 1, g: 0.001, gram: 0.001, lb: 0.453592, lbs: 0.453592, pound: 0.453592, pounds: 0.453592 };
+
+                let result = null;
+
+                if (from in toKm && to in toKm) {
+                    const meters = value * toKm[from];
+                    result = meters / toKm[to];
+                } else if (from in toKg && to in toKg) {
+                    const kg = value * toKg[from];
+                    result = kg / toKg[to];
+                } else if (from === 'c' && to === 'f') {
+                    result = (value * 9/5) + 32;
+                } else if (from === 'f' && to === 'c') {
+                    result = (value - 32) * 5/9;
+                }
+
+                if (result === null) {
+                    return { success: false, message: 'Yeh conversion mujhe nahi aata, Boss.' };
+                }
+
+                return { success: true, message: `${value} ${from} = ${result.toFixed(2)} ${to}, Boss.` };
             }
 
             case 'clearHistory': {
