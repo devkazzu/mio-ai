@@ -89,9 +89,7 @@ export async function transcribe(audioBlob) {
 
 // ===== VISION (photo → text description) =====
 const VISION_MODELS = [
-    'qwen/qwen3-vl-27b',
-    'qwen/qwen-2.5-vl-27b',
-    'qwen/qwen3-27b'
+    'qwen/qwen3.8-27b'
 ];
 
 export async function visionChat(imageBlob, prompt) {
