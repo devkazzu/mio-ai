@@ -90,7 +90,7 @@
         </div>
     </main>
 
-    <section class="mic-section">
+        <section class="mic-section">
         <div class="mic-btn-container" id="micContainer">
             <div class="mic-glow"></div>
             <div class="mic-ripple"></div>
@@ -107,6 +107,22 @@
         </div>
         <span class="mic-hint" id="micHint">Hold to talk</span>
     </section>
+
+    <div class="text-input-bar" id="textInputBar">
+        <input 
+            type="text" 
+            id="textInput" 
+            placeholder="Ya type karo..." 
+            autocomplete="off" 
+            spellcheck="false"
+        >
+        <button class="send-btn" id="sendBtn" aria-label="Send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+        </button>
+    </div>
 
     <div class="settings-overlay" id="settingsOverlay">
         <div class="settings-panel">
