@@ -1,8 +1,8 @@
 {
-  "name": "Mio — AI Voice Assistant",
+  "name": "Mio — AI Assistant",
   "short_name": "Mio",
-  "description": "Your personal AI voice assistant. Hinglish mein baat karo.",
-"start_url": "/mio-ai/",
+  "description": "Your personal AI assistant. Hinglish mein baat karo.",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0b1a",
@@ -11,14 +11,12 @@
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
