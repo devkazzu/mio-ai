@@ -32,7 +32,6 @@ display: flex;
 flex-direction: column;
 min-height: 100vh;
 min-height: 100dvh;
-position: relative;
 overflow: hidden;
 }
 
@@ -60,6 +59,7 @@ border-bottom: 1px solid var(--border-subtle);
 }
 
 .top-bar-left { display: flex; align-items: center; gap: 10px; }
+.top-bar-right { display: flex; align-items: center; gap: 8px; }
 
 .mio-logo {
 font-family: 'Playfair Display', serif;
@@ -74,7 +74,7 @@ letter-spacing: 1px;
 .mio-sparkle { display: inline-flex; width: 24px; height: 24px; }
 .mio-sparkle svg { width: 20px; height: 20px; }
 
-.settings-btn {
+.icon-btn {
 background: none;
 border: 1px solid var(--border-accent);
 border-radius: 12px;
@@ -85,30 +85,15 @@ transition: all 0.3s ease;
 color: var(--text-secondary);
 }
 
-.settings-btn:active { border-color: var(--accent-pink); color: var(--accent-pink-light); }
-.settings-btn svg { width: 20px; height: 20px; }
+.icon-btn:active { border-color: var(--accent-pink); color: var(--accent-pink-light); }
+.icon-btn svg { width: 20px; height: 20px; }
 
 /* MAIN */
-.main-content {
-flex: 1;
-display: flex;
-flex-direction: column;
-overflow: hidden;
-position: relative;
-z-index: 1;
-}
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 1; }
 
 /* AVATAR */
-.avatar-section {
-display: flex; flex-direction: column; align-items: center;
-padding: 20px 20px 10px;
-flex-shrink: 0;
-}
-
-.avatar-container {
-position: relative;
-width: 100px; height: 100px;
-}
+.avatar-section { display: flex; flex-direction: column; align-items: center; padding: 20px 20px 10px; flex-shrink: 0; }
+.avatar-container { position: relative; width: 100px; height: 100px; }
 
 .avatar-ring {
 position: absolute; inset: -4px;
@@ -253,6 +238,14 @@ border: 1px solid var(--border-accent);
 border-top-right-radius: 6px;
 }
 
+.message-image {
+max-width: 200px;
+max-height: 200px;
+border-radius: 12px;
+margin-bottom: 6px;
+display: block;
+}
+
 .welcome-message {
 text-align: center;
 padding: 20px;
@@ -293,10 +286,7 @@ padding: 16px 20px 12px;
 flex-shrink: 0;
 }
 
-.mic-btn-container {
-position: relative;
-width: 72px; height: 72px;
-}
+.mic-btn-container { position: relative; width: 72px; height: 72px; }
 
 .mic-glow {
 position: absolute; inset: -12px;
@@ -341,11 +331,11 @@ background: var(--accent-gradient);
 cursor: pointer;
 display: flex; align-items: center; justify-content: center;
 z-index: 2;
-transition: all 0.3s ease;
 box-shadow: 0 4px 20px rgba(224,145,181,0.3);
 touch-action: none;
 -webkit-user-select: none;
 user-select: none;
+transition: all 0.3s ease;
 }
 
 .mic-btn:active, .mic-btn.active {
@@ -406,8 +396,8 @@ border: none;
 background: var(--accent-gradient);
 cursor: pointer;
 display: flex; align-items: center; justify-content: center;
-transition: all 0.3s ease;
 flex-shrink: 0;
+transition: all 0.3s ease;
 }
 
 .send-btn svg { width: 18px; height: 18px; color: white; }
@@ -473,13 +463,7 @@ font-size: 20px;
 display: flex; align-items: center; justify-content: center;
 }
 
-.settings-body {
-padding: 20px;
-display: flex;
-flex-direction: column;
-gap: 20px;
-}
-
+.settings-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 .setting-group { display: flex; flex-direction: column; gap: 8px; }
 
 .setting-group label {
@@ -506,11 +490,7 @@ border-color: var(--accent-pink);
 box-shadow: 0 0 0 3px rgba(224,145,181,0.1);
 }
 
-.setting-note {
-font-size: 11px;
-color: var(--text-muted);
-line-height: 1.5;
-}
+.setting-note { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
 
 .settings-save-btn {
 background: var(--accent-gradient);
@@ -542,6 +522,9 @@ opacity: 0;
 visibility: hidden;
 transition: all 0.3s ease;
 white-space: nowrap;
+max-width: 90vw;
+text-overflow: ellipsis;
+overflow: hidden;
 }
 
 .toast.show {
