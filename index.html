@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0b1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Mio — Your Personal AI Voice Assistant">
+    <title>Mio</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <span class="mio-sparkle">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z" fill="url(#sparkleGrad)"/>
+                    <defs>
+                        <linearGradient id="sparkleGrad" x1="3" y1="2" x2="21" y2="22">
+                            <stop offset="0%" stop-color="#f0a8c8"/>
+                            <stop offset="100%" stop-color="#b48cde"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </span>
+            <span class="mio-logo">Mio</span>
+        </div>
+        <button class="settings-btn" id="settingsBtn" aria-label="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+        </button>
+    </header>
+
+    <main class="main-content">
+        <section class="avatar-section" id="avatarSection">
+            <div class="avatar-container" id="avatarContainer">
+                <div class="avatar-ring"></div>
+                <div class="avatar-inner">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="avatarBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#1a1040"/>
+                                <stop offset="50%" stop-color="#201550"/>
+                                <stop offset="100%" stop-color="#2a1060"/>
+                            </linearGradient>
+                            <linearGradient id="avatarAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#f0a8c8"/>
+                                <stop offset="50%" stop-color="#e091b5"/>
+                                <stop offset="100%" stop-color="#b48cde"/>
+                            </linearGradient>
+                            <radialGradient id="avatarGlow" cx="50%" cy="40%" r="50%">
+                                <stop offset="0%" stop-color="rgba(224,145,181,0.15)"/>
+                                <stop offset="100%" stop-color="rgba(224,145,181,0)"/>
+                            </radialGradient>
+                        </defs>
+                        <rect width="120" height="120" fill="url(#avatarBg)"/>
+                        <circle cx="60" cy="45" r="35" fill="url(#avatarGlow)"/>
+                        <text x="50%" y="55%" text-anchor="middle" dominant-baseline="central"
+                              font-family="'Playfair Display', serif" font-size="52"
+                              font-weight="700" font-style="italic"
+                              fill="url(#avatarAccent)">M</text>
+                        <circle cx="30" cy="90" r="1.5" fill="rgba(240,168,200,0.2)"/>
+                        <circle cx="90" cy="25" r="1" fill="rgba(180,140,222,0.25)"/>
+                        <circle cx="95" cy="85" r="1.5" fill="rgba(240,168,200,0.15)"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="status-text" id="statusText">Tap to talk</p>
+            <div class="audio-visualizer" id="audioVisualizer">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+        </section>
+
+        <div class="conversation-area" id="conversationArea">
+            <div class="welcome-message" id="welcomeMessage">
+                <span class="greeting">Namaste, Boss ✨</span>
+                Main hoon Mio — aapki apni AI assistant.<br>
+                Mic button hold karo aur mujhse baat karo!
+            </div>
+        </div>
+    </main>
+
+    <section class="mic-section">
+        <div class="mic-btn-container" id="micContainer">
+            <div class="mic-glow"></div>
+            <div class="mic-ripple"></div>
+            <div class="mic-ripple"></div>
+            <div class="mic-ripple"></div>
+            <button class="mic-btn" id="micBtn" aria-label="Hold to talk">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 1a4 4 0 00-4 4v7a4 4 0 008 0V5a4 4 0 00-4-4z"/>
+                    <path d="M19 10v2a7 7 0 01-14 0v-2" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="12" y1="19" x2="12" y2="23" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="8" y1="23" x2="16" y2="23" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <span class="mic-hint" id="micHint">Hold to talk</span>
+    </section>
+
+    <div class="settings-overlay" id="settingsOverlay">
+        <div class="settings-panel">
+            <div class="settings-header">
+                <h2>Settings</h2>
+                <button class="settings-close" id="settingsClose" aria-label="Close settings">&times;</button>
+            </div>
+            <div class="settings-body">
+                <div class="setting-group">
+                    <label for="apiKeyInput">Groq API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="gsk_xxxxxxxxxx..." autocomplete="off" spellcheck="false">
+                    <p class="setting-note">Your API key is stored locally in your browser. It never leaves your device.</p>
+                </div>
+                <div class="setting-group">
+                    <label for="userNameInput">Your Name</label>
+                    <input type="text" id="userNameInput" placeholder="Boss" autocomplete="off" spellcheck="false">
+                    <p class="setting-note">Mio will call you by this name instead of "Boss".</p>
+                </div>
+                <button class="settings-save-btn" id="settingsSaveBtn">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
