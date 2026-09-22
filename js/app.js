@@ -1,9 +1,9 @@
 // Mio — js/app.js
 
 import { MIO_SYSTEM_PROMPT, GREETINGS, QUICK_RESPONSES } from './prompts.js';
-import { chat, transcribe, setApiKey, getApiKey, checkApiKey } from './llm.js';
+import { chat, transcribe, setApiKey, getApiKey, checkApiKey, visionChat } from './llm.js';
 import { startRecording, stopRecording, speak, stopSpeaking, initVoice } from './voice.js';
-import { saveMessage, getHistory, getUserNickname, extractFacts, setUserFact } from './memory.js';
+import { saveMessage, getHistory, getUserNickname, extractFacts, setUserFact, getUserFact } from './memory.js';
 import { executeAction, startReminderChecker, requestNotificationPermission } from './tools.js';
 
 const dom = {
@@ -18,12 +18,15 @@ const dom = {
     settingsClose: document.getElementById('settingsClose'),
     apiKeyInput: document.getElementById('apiKeyInput'),
     userNameInput: document.getElementById('userNameInput'),
+    cityInput: document.getElementById('cityInput'),
     settingsSaveBtn: document.getElementById('settingsSaveBtn'),
     toast: document.getElementById('toast'),
     avatarContainer: document.getElementById('avatarContainer'),
     audioVisualizer: document.getElementById('audioVisualizer'),
     textInput: document.getElementById('textInput'),
-    sendBtn: document.getElementById('sendBtn')
+    sendBtn: document.getElementById('sendBtn'),
+    cameraBtn: document.getElementById('cameraBtn'),
+    cameraInput: document.getElementById('cameraInput')
 };
 
 const state = { recording: false, processing: false, greeted: false };
@@ -108,7 +111,7 @@ function parseActionBlock(text) {
     return null;
 }
 
-function appendMessage(role, text) {
+function appendMessage(role, text, imageDataUrl) {
     if (!dom.conversationArea) return;
     if (dom.welcomeMessage && dom.welcomeMessage.parentNode) dom.welcomeMessage.remove();
 
@@ -125,7 +128,19 @@ function appendMessage(role, text) {
 
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
-    bubble.textContent = text;
+
+    if (imageDataUrl) {
+        const img = document.createElement('img');
+        img.src = imageDataUrl;
+        img.className = 'message-image';
+        bubble.appendChild(img);
+    }
+
+    if (text) {
+        const span = document.createElement('span');
+        span.textContent = text;
+        bubble.appendChild(span);
+    }
 
     msg.appendChild(av);
     msg.appendChild(bubble);
@@ -246,6 +261,47 @@ async function handleTextSend() {
     }
 }
 
+// ===== CAMERA =====
+async function handleCameraCapture(file) {
+    if (!file) return;
+
+    // Show user's image in chat
+    const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+
+    saveMessage('user', '[photo]');
+    appendMessage('user', '', dataUrl);
+
+    const typing = appendTypingIndicator();
+    setThinkingUI();
+
+    try {
+        const description = await visionChat(
+            file,
+            'Is photo mein kya dikh raha hai? Hinglish mein 1-2 sentence mein short reply do jaise ek dost batata hai. Agar text hai toh padho aur batao.'
+        );
+
+        removeTypingIndicator(typing);
+        const clean = stripMarkdown(description);
+        saveMessage('assistant', clean);
+        appendMessage('mio', clean);
+        await speakWithUI(clean);
+    } catch (e) {
+        removeTypingIndicator(typing);
+        console.error('[Mio] vision error', e);
+        const msg = QUICK_RESPONSES.visionError || 'Photo dekh nahi payi, Boss.';
+        saveMessage('assistant', msg);
+        appendMessage('mio', msg);
+        await speakWithUI(msg);
+    } finally {
+        setIdleUI();
+    }
+}
+
 async function onMicDown(e) {
     e.preventDefault();
     if (state.recording || state.processing) return;
@@ -269,7 +325,7 @@ async function onMicDown(e) {
     }
 }
 
-async function onMicUp(e) {
+async function onMicUp() {
     if (!state.recording) return;
     state.recording = false;
     setThinkingUI();
@@ -296,6 +352,9 @@ function openSettings() {
 
     const n = getUserNickname();
     if (dom.userNameInput) dom.userNameInput.value = (n === 'Boss') ? '' : n;
+
+    const c = getUserFact('city') || '';
+    if (dom.cityInput) dom.cityInput.value = c;
 }
 
 function closeSettings() {
@@ -305,12 +364,14 @@ function closeSettings() {
 function saveSettings() {
     const key = dom.apiKeyInput ? dom.apiKeyInput.value.trim() : '';
     const name = dom.userNameInput ? dom.userNameInput.value.trim() : '';
+    const city = dom.cityInput ? dom.cityInput.value.trim() : '';
 
     if (key) setApiKey(key);
     if (name) {
         const lower = name.toLowerCase();
         if (lower !== 'raju' && lower !== 'raju ji') setUserFact('nickname', name);
     }
+    if (city) setUserFact('city', city);
 
     showToast('Settings saved, Boss.');
     closeSettings();
@@ -330,7 +391,6 @@ async function init() {
     const v = await initVoice();
     if (!v.supported) showToast('Yeh browser voice support nahi karta.');
 
-    // Start background reminder checker
     startReminderChecker();
 
     const hasKey = await checkApiKey();
@@ -339,7 +399,6 @@ async function init() {
         return;
     }
 
-    // Ask for notification permission on first load (non-blocking)
     setTimeout(() => {
         requestNotificationPermission().catch(() => {});
     }, 1500);
@@ -359,6 +418,17 @@ function bindEvents() {
     if (dom.textInput) {
         dom.textInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); handleTextSend(); }
+        });
+    }
+
+    if (dom.cameraBtn && dom.cameraInput) {
+        dom.cameraBtn.addEventListener('click', () => {
+            dom.cameraInput.click();
+        });
+        dom.cameraInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (file) handleCameraCapture(file);
+            dom.cameraInput.value = '';
         });
     }
 
