@@ -609,7 +609,66 @@ function bindEvents() {
     }
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape') 
+        /**
+ * Processes a direct text message from the text input bar.
+ */
+async function handleTextSend() {
+    if (state.processing) return;
+    if (!dom.textInput) return;
+
+    const userText = dom.textInput.value.trim();
+    if (!userText) return;
+
+    dom.textInput.value = '';
+    state.processing = true;
+
+    let typingNode = null;
+    try {
+        stopSpeaking();
+        setThinkingUI();
+
+        extractFacts(userText);
+        saveMessage('user', userText);
+        appendMessage('user', userText);
+
+        typingNode = appendTypingIndicator();
+
+        const messages = buildMessages();
+        const rawReply = await chat(messages, { temperature: 0.75, maxTokens: 300 });
+
+        removeTypingIndicator(typingNode);
+        typingNode = null;
+
+        const action = parseActionBlock(rawReply);
+        if (action) {
+            const result = await executeAction(action.action, action.parameters);
+            const toolMessage = result?.message || QUICK_RESPONSES.error;
+            saveMessage('assistant', toolMessage);
+            appendMessage('mio', toolMessage);
+            await speakWithUI(toolMessage);
+        } else {
+            const cleanReply = stripMarkdown(rawReply);
+            if (cleanReply) {
+                saveMessage('assistant', cleanReply);
+                appendMessage('mio', cleanReply);
+                await speakWithUI(cleanReply);
+            } else {
+                await speakWithUI(QUICK_RESPONSES.error);
+            }
+        }
+    } catch (error) {
+        removeTypingIndicator(typingNode);
+        console.error('[Mio] handleTextSend error:', error);
+        showToast('Kuch problem ho gayi, Boss.');
+        try {
+            await speakWithUI(QUICK_RESPONSES.error);
+        } catch { /* noop */ }
+    } finally {
+        state.processing = false;
+        setIdleUI();
+    }
+}{
             closeSettings();
             stopSpeaking();
         }
