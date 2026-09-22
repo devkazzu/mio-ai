@@ -2,7 +2,7 @@
   "name": "Mio — AI Voice Assistant",
   "short_name": "Mio",
   "description": "Your personal AI voice assistant. Hinglish mein baat karo.",
-  "start_url": "/mio/",
+"start_url": "/mio-ai/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0b1a",
